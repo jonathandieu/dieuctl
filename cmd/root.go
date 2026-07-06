@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jonathandieu/dieuctl/cmd/slack"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -26,7 +25,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/dieuctl/config.yaml)")
-	rootCmd.AddCommand(slack.Cmd)
 }
 
 func initConfig() {
