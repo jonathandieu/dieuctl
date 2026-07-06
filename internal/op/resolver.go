@@ -22,9 +22,9 @@ type Resolver struct {
 func New(ctx context.Context) (*Resolver, error) {
 	token := os.Getenv("OP_SERVICE_ACCOUNT_TOKEN")
 	if token == "" {
-		// No service account — use CLI fallback. Validate op is on PATH.
+		// No service account, use CLI fallback. Validate op is on PATH.
 		if _, err := exec.LookPath("op"); err != nil {
-			return nil, fmt.Errorf("no OP_SERVICE_ACCOUNT_TOKEN set and `op` CLI not found — run `dieuctl auth login` or set OP_SERVICE_ACCOUNT_TOKEN")
+			return nil, fmt.Errorf("op CLI not found, install it from https://1password.com/downloads/command-line/ (or set OP_SERVICE_ACCOUNT_TOKEN for headless use): %w", err)
 		}
 		return &Resolver{}, nil
 	}
@@ -61,7 +61,7 @@ func (r *Resolver) Resolve(ctx context.Context, ref string) (string, error) {
 		if exitErr, ok := err.(*exec.ExitError); ok {
 			return "", fmt.Errorf("resolve %s: %s", ref, strings.TrimSpace(string(exitErr.Stderr)))
 		}
-		return "", fmt.Errorf("resolve %s: %w — run `dieuctl auth login`", ref, err)
+		return "", fmt.Errorf("resolve %s: %w, run `dieuctl auth login`", ref, err)
 	}
 	return strings.TrimSpace(string(out)), nil
 }

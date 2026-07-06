@@ -55,13 +55,20 @@ func TestConfig_DOAccount_Unknown(t *testing.T) {
 		Providers: ProvidersConfig{
 			DigitalOcean: DigitalOceanProviderConfig{
 				Accounts: map[string]DOAccountConfig{
+					"spare":    {},
 					"platform": {},
+					"main":     {},
 				},
 			},
 		},
 	}
 
-	if _, err := cfg.DOAccount("nonexistent"); err == nil {
-		t.Error("expected an error for an unknown account, got nil")
+	_, err := cfg.DOAccount("nonexistent")
+	if err == nil {
+		t.Fatal("expected an error for an unknown account, got nil")
+	}
+	want := `unknown account "nonexistent", configured: main, platform, spare`
+	if err.Error() != want {
+		t.Errorf("error = %q, want %q", err.Error(), want)
 	}
 }

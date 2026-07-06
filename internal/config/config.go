@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -40,7 +41,7 @@ type CloudflareConfig struct {
 type ArgoCDConfig struct {
 	Server          string `mapstructure:"server"`
 	Token           string `mapstructure:"token"`           // op:// reference
-	AdminPassword   string `mapstructure:"admin_password"`  // op:// reference — resolved + bcrypted at bootstrap
+	AdminPassword   string `mapstructure:"admin_password"`  // op:// reference, resolved + bcrypted at bootstrap
 	PlatformCluster string `mapstructure:"platform_cluster"` // cluster name hosting ArgoCD, e.g. dieubernetes-platform-do-atl1
 }
 
@@ -62,7 +63,7 @@ type TrafficConfig struct {
 	PreviousCluster string `mapstructure:"previous_cluster"` // written by traffic switch
 }
 
-// Load reads and validates the config from the default or overridden path.
+// Load reads and unmarshals the config from the default or overridden path.
 func Load(cfgFile string) (*Config, error) {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -102,7 +103,8 @@ func (c *Config) DOAccount(name string) (DOAccountConfig, error) {
 		for k := range c.Providers.DigitalOcean.Accounts {
 			names = append(names, k)
 		}
-		return DOAccountConfig{}, fmt.Errorf("unknown account %q — configured: %s", name, strings.Join(names, ", "))
+		sort.Strings(names)
+		return DOAccountConfig{}, fmt.Errorf("unknown account %q, configured: %s", name, strings.Join(names, ", "))
 	}
 	return acct, nil
 }
@@ -111,6 +113,9 @@ func expandHome(path string) string {
 	if !strings.HasPrefix(path, "~/") {
 		return path
 	}
-	home, _ := os.UserHomeDir()
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return path
+	}
 	return filepath.Join(home, path[2:])
 }
