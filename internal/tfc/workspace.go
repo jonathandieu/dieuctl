@@ -2,6 +2,7 @@ package tfc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/go-tfe"
@@ -13,6 +14,9 @@ func (c *Client) GetOrCreateWorkspace(ctx context.Context, name string) (*tfe.Wo
 	ws, err := c.tfe.Workspaces.Read(ctx, c.org, name)
 	if err == nil {
 		return ws, nil
+	}
+	if !errors.Is(err, tfe.ErrResourceNotFound) {
+		return nil, fmt.Errorf("read workspace %q: %w", name, err)
 	}
 	execMode := "local"
 	ws, err = c.tfe.Workspaces.Create(ctx, c.org, tfe.WorkspaceCreateOptions{
@@ -62,17 +66,9 @@ func (c *Client) ListWorkspaces(ctx context.Context) ([]*tfe.Workspace, error) {
 
 // ApplyVariableSet assigns a named variable set to a workspace.
 func (c *Client) ApplyVariableSet(ctx context.Context, varSetName string, ws *tfe.Workspace) error {
-	// Look up variable set by name
-	varSets, err := c.tfe.VariableSets.List(ctx, c.org, &tfe.VariableSetListOptions{})
+	vsID, err := c.findVariableSet(ctx, varSetName)
 	if err != nil {
-		return fmt.Errorf("list variable sets: %w", err)
-	}
-	var vsID string
-	for _, vs := range varSets.Items {
-		if vs.Name == varSetName {
-			vsID = vs.ID
-			break
-		}
+		return err
 	}
 	if vsID == "" {
 		return fmt.Errorf("variable set %q not found in org %q", varSetName, c.org)
@@ -85,4 +81,26 @@ func (c *Client) ApplyVariableSet(ctx context.Context, varSetName string, ws *tf
 		return fmt.Errorf("apply variable set %q to workspace %q: %w", varSetName, ws.Name, err)
 	}
 	return nil
+}
+
+// findVariableSet returns the ID of the named variable set, or "" if no
+// variable set with that name exists in the org. Paginates through all
+// variable sets, not just the first page.
+func (c *Client) findVariableSet(ctx context.Context, name string) (string, error) {
+	opts := &tfe.VariableSetListOptions{ListOptions: tfe.ListOptions{PageSize: 100}}
+	for {
+		page, err := c.tfe.VariableSets.List(ctx, c.org, opts)
+		if err != nil {
+			return "", fmt.Errorf("list variable sets: %w", err)
+		}
+		for _, vs := range page.Items {
+			if vs.Name == name {
+				return vs.ID, nil
+			}
+		}
+		if page.CurrentPage >= page.TotalPages {
+			return "", nil
+		}
+		opts.PageNumber = page.NextPage
+	}
 }

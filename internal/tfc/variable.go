@@ -40,15 +40,26 @@ func (c *Client) UpsertVariable(ctx context.Context, wsID, key, value string, se
 	return nil
 }
 
+// findVariable returns the ID of the variable matching key in the given
+// workspace, or "" if none exists. Paginates through all variable pages,
+// not just the first, so it doesn't miss the target on workspaces with many
+// variables (which would otherwise cause UpsertVariable to create a
+// duplicate instead of updating the existing one).
 func (c *Client) findVariable(ctx context.Context, wsID, key string) (string, error) {
-	list, err := c.tfe.Variables.List(ctx, wsID, &tfe.VariableListOptions{})
-	if err != nil {
-		return "", fmt.Errorf("list variables for workspace %q: %w", wsID, err)
-	}
-	for _, v := range list.Items {
-		if v.Key == key {
-			return v.ID, nil
+	opts := &tfe.VariableListOptions{ListOptions: tfe.ListOptions{PageSize: 100}}
+	for {
+		page, err := c.tfe.Variables.List(ctx, wsID, opts)
+		if err != nil {
+			return "", fmt.Errorf("list variables for workspace %q: %w", wsID, err)
 		}
+		for _, v := range page.Items {
+			if v.Key == key {
+				return v.ID, nil
+			}
+		}
+		if page.CurrentPage >= page.TotalPages {
+			return "", nil
+		}
+		opts.PageNumber = page.NextPage
 	}
-	return "", nil
 }
