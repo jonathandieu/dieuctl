@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/jonathandieu/dieuctl/internal/cloudflare"
 	"github.com/jonathandieu/dieuctl/internal/config"
@@ -97,8 +98,9 @@ Example:
 		// 1. Generate Terraform files and commit
 		fmt.Println("→ generating terraform files...")
 		vars := gitops.ClusterVars{
-			Name:     name,
-			Provider: createProvider,
+			Name:      name,
+			ShortName: strings.TrimPrefix(name, "dieubernetes-"),
+			Provider:  createProvider,
 			Account:  createAccount,
 			Region:   createRegion,
 			NodeSize: createSize,
@@ -246,7 +248,7 @@ Example:
 		if err != nil {
 			return fmt.Errorf("open dieubernetes repo: %w", err)
 		}
-		if err := gitopsRepo.Add(filepath.Join("clusters", name)); err != nil {
+		if err := gitopsRepo.Add(filepath.Join("clusters", vars.ShortName)); err != nil {
 			return fmt.Errorf("stage dieubernetes files: %w", err)
 		}
 		if err := gitopsRepo.Commit(fmt.Sprintf("feat: register cluster %s", name)); err != nil {
@@ -334,7 +336,7 @@ func bootstrapOPServiceAccountSecret(ctx context.Context, kube *kubectl.Client, 
 }
 
 func generateDieubernetesFiles(dieubernetesRepo string, vars gitops.ClusterVars) error {
-	clusterDir := filepath.Join(dieubernetesRepo, "clusters", vars.Name)
+	clusterDir := filepath.Join(dieubernetesRepo, "clusters", vars.ShortName)
 	tmplBase := "cluster/" + vars.Provider
 
 	for _, f := range []struct{ tmpl, dest string }{

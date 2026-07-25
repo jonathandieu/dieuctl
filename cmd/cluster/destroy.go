@@ -152,7 +152,7 @@ var destroyCmd = &cobra.Command{
 
 		// 5. Remove dieubernetes cluster dir and commit
 		fmt.Println("→ removing dieubernetes cluster directory...")
-		gitopsClusterDir := filepath.Join(cfg.DieubernetesRepo, "clusters", name)
+		gitopsClusterDir := filepath.Join(cfg.DieubernetesRepo, "clusters", strings.TrimPrefix(name, "dieubernetes-"))
 		if err := os.RemoveAll(gitopsClusterDir); err != nil {
 			return fmt.Errorf("remove dieubernetes cluster dir: %w", err)
 		}

@@ -11,13 +11,14 @@ import (
 
 // ClusterVars holds the template variables used when generating per-cluster files.
 type ClusterVars struct {
-	Name     string // e.g. dieubernetes-do-platform-nyc3
-	Provider string // e.g. do
-	Account  string // e.g. platform
-	Region   string // e.g. nyc3
-	NodeSize string
-	MinNodes int
-	MaxNodes int
+	Name      string // e.g. dieubernetes-platform-do-atl1
+	ShortName string // e.g. platform-do-atl1 (Name with the dieubernetes- prefix stripped, used for dieubernetes-repo paths and the ArgoCD cluster secret name)
+	Provider  string // e.g. do
+	Account   string // e.g. platform
+	Region    string // e.g. nyc3
+	NodeSize  string
+	MinNodes  int
+	MaxNodes  int
 
 	// Populated after TFC apply
 	LBID        string

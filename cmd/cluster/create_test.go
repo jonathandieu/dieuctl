@@ -12,20 +12,21 @@ import (
 func TestGenerateDieubernetesFiles(t *testing.T) {
 	dir := t.TempDir()
 	vars := gitops.ClusterVars{
-		Name:     "dieubernetes-platform-do-nyc3",
-		Provider: "do",
-		Account:  "personal",
-		Region:   "nyc3",
-		Tier:     "platform",
-		LBID:     "abc-123",
-		LBIP:     "1.2.3.4",
+		Name:      "dieubernetes-platform-do-nyc3",
+		ShortName: "platform-do-nyc3",
+		Provider:  "do",
+		Account:   "personal",
+		Region:    "nyc3",
+		Tier:      "platform",
+		LBID:      "abc-123",
+		LBIP:      "1.2.3.4",
 	}
 
 	if err := generateDieubernetesFiles(dir, vars); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	clusterDir := filepath.Join(dir, "clusters", vars.Name)
+	clusterDir := filepath.Join(dir, "clusters", vars.ShortName)
 	files := []string{
 		"cluster.yaml",
 		filepath.Join("overrides", "envoy-gateway.yaml"),
@@ -45,6 +46,16 @@ func TestGenerateDieubernetesFiles(t *testing.T) {
 	const wantFlag = "--kubelet-insecure-tls"
 	if !strings.Contains(string(got), wantFlag) {
 		t.Errorf("metrics-server.yaml missing %q:\n%s", wantFlag, got)
+	}
+
+	// cluster.yaml's name field must be the short form (no dieubernetes- prefix) —
+	// this is what ArgoCD registers and what dieuctl argocd register looks up.
+	clusterYAML, err := os.ReadFile(filepath.Join(clusterDir, "cluster.yaml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(clusterYAML), "name: platform-do-nyc3") {
+		t.Errorf("cluster.yaml name field should be short form %q:\n%s", vars.ShortName, clusterYAML)
 	}
 }
 
