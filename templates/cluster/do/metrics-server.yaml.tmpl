@@ -1,0 +1,4 @@
+metrics-server:
+  args:
+    # DOKS kubelets use self-signed certs and DO doesn't expose the kubelet CA.
+    - --kubelet-insecure-tls

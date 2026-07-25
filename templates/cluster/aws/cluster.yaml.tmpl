@@ -1,0 +1,9 @@
+name: {{ .Name }}
+provider: {{ .Provider }}
+account: {{ .Account }}
+region: {{ .Region }}
+labels:
+  purpose: {{ .Tier }}
+{{- if .Environment }}
+  environment: {{ .Environment }}
+{{- end }}

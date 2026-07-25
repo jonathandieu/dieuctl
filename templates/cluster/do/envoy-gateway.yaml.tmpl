@@ -1,0 +1,8 @@
+gateway-helm:
+  config:
+    envoyGateway:
+      provider:
+        kubernetes:
+          envoyService:
+            annotations:
+              service.beta.kubernetes.io/do-loadbalancer-id: "{{ .LBID }}"
