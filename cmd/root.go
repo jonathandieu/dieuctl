@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jonathandieu/dieuctl/cmd/argocd"
 	"github.com/jonathandieu/dieuctl/cmd/cluster"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,7 +19,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(cluster.Cmd)
+	rootCmd.AddCommand(cluster.Cmd, argocd.Cmd)
 }
 
 func Execute() {
