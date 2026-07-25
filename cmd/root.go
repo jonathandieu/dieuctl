@@ -5,7 +5,11 @@ import (
 	"os"
 
 	"github.com/jonathandieu/dieuctl/cmd/argocd"
+	"github.com/jonathandieu/dieuctl/cmd/auth"
 	"github.com/jonathandieu/dieuctl/cmd/cluster"
+	"github.com/jonathandieu/dieuctl/cmd/exec"
+	"github.com/jonathandieu/dieuctl/cmd/machine"
+	"github.com/jonathandieu/dieuctl/cmd/traffic"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,7 +23,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(cluster.Cmd, argocd.Cmd)
+	rootCmd.AddCommand(cluster.Cmd, argocd.Cmd, auth.Cmd, exec.Cmd, machine.Cmd, traffic.Cmd)
 }
 
 func Execute() {
