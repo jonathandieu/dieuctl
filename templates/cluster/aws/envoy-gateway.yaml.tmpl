@@ -1,0 +1,17 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: dieubernetes
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        annotations:
+          # NLB adoption — the pre-provisioned NLB ARN is passed via Terraform output.
+          # AWS Load Balancer Controller reads these annotations and adopts the existing NLB.
+          service.beta.kubernetes.io/aws-load-balancer-type: "external"
+          service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+          service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+          service.beta.kubernetes.io/aws-load-balancer-arn: "{{ .LBID }}"
