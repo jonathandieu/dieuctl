@@ -10,7 +10,7 @@ require (
 )
 
 require (
-	github.com/cloudflare/cloudflare-go/v4 v4.6.0 // indirect
+	github.com/cloudflare/cloudflare-go/v4 v4.6.0
 	github.com/dylibso/observe-sdk/go v0.0.0-20240828172851-9145d8ad07e1 // indirect
 	github.com/extism/go-sdk v1.7.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
