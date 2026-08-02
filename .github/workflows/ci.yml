@@ -1,0 +1,19 @@
+name: CI
+on:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -coverprofile=coverage.out ./...
+      - uses: codecov/codecov-action@v5
+        with:
+          files: coverage.out
