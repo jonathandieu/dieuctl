@@ -13,6 +13,7 @@ import (
 type Config struct {
 	TerraformRepo    string `mapstructure:"terraform_repo"`
 	DieubernetesRepo string `mapstructure:"dieubernetes_repo"`
+	SlackRepo        string `mapstructure:"slack_repo"` // local checkout of the emoji archive repo
 
 	OnePassword OnePasswordConfig `mapstructure:"onepassword"`
 	TFC         TFCConfig         `mapstructure:"tfc"`
@@ -20,6 +21,11 @@ type Config struct {
 	ArgoCD      ArgoCDConfig      `mapstructure:"argocd"`
 	Providers   ProvidersConfig   `mapstructure:"providers"`
 	Traffic     TrafficConfig     `mapstructure:"traffic"`
+	Slack       SlackConfig       `mapstructure:"slack"`
+}
+
+type SlackConfig struct {
+	Token string `mapstructure:"token"` // op:// reference; needs the emoji:read scope
 }
 
 type OnePasswordConfig struct {
@@ -90,6 +96,7 @@ func Load(cfgFile string) (*Config, error) {
 
 	cfg.TerraformRepo = expandHome(cfg.TerraformRepo)
 	cfg.DieubernetesRepo = expandHome(cfg.DieubernetesRepo)
+	cfg.SlackRepo = expandHome(cfg.SlackRepo)
 
 	return &cfg, nil
 }

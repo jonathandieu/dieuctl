@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jonathandieu/dieuctl/cmd/emoji"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -14,6 +15,10 @@ var rootCmd = &cobra.Command{
 	Use:   "dieuctl",
 	Short: "A personal swiss-army knife CLI",
 	Long:  "A personal swiss-army knife CLI for automating the things I'm too lazy to do manually but too stubborn to do differently.",
+}
+
+func init() {
+	rootCmd.AddCommand(emoji.Cmd)
 }
 
 func Execute() {
