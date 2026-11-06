@@ -20,6 +20,7 @@ type Config struct {
 	ArgoCD      ArgoCDConfig      `mapstructure:"argocd"`
 	Providers   ProvidersConfig   `mapstructure:"providers"`
 	Traffic     TrafficConfig     `mapstructure:"traffic"`
+	Splitwise   SplitwiseConfig   `mapstructure:"splitwise"`
 }
 
 type OnePasswordConfig struct {
@@ -40,8 +41,8 @@ type CloudflareConfig struct {
 
 type ArgoCDConfig struct {
 	Server          string `mapstructure:"server"`
-	Token           string `mapstructure:"token"`           // op:// reference
-	AdminPassword   string `mapstructure:"admin_password"`  // op:// reference, resolved + bcrypted at bootstrap
+	Token           string `mapstructure:"token"`            // op:// reference
+	AdminPassword   string `mapstructure:"admin_password"`   // op:// reference, resolved + bcrypted at bootstrap
 	PlatformCluster string `mapstructure:"platform_cluster"` // cluster name hosting ArgoCD, e.g. dieubernetes-platform-do-atl1
 }
 
@@ -54,13 +55,23 @@ type DigitalOceanProviderConfig struct {
 }
 
 type DOAccountConfig struct {
-	Token          string `mapstructure:"token"`           // op:// reference
+	Token          string `mapstructure:"token"`            // op:// reference
 	TFCVariableSet string `mapstructure:"tfc_variable_set"` // variable set name in TFC
 }
 
 type TrafficConfig struct {
 	TFCWorkspace    string `mapstructure:"tfc_workspace"`
 	PreviousCluster string `mapstructure:"previous_cluster"` // written by traffic switch
+}
+
+// SplitwiseConfig holds op:// refs (or plaintext) for Splitwise auth.
+// Prefer api_token when a personal API key exists. Otherwise session is the
+// dashboard Cookie header and csrf is the X-CSRF-Token header, stored in
+// 1Password item splitwise.session (fields cookie, csrf_token).
+type SplitwiseConfig struct {
+	APIToken string `mapstructure:"api_token"` // op:// reference, optional
+	Session  string `mapstructure:"session"`   // op:// reference to Cookie header
+	CSRF     string `mapstructure:"csrf"`      // op:// reference to X-CSRF-Token
 }
 
 // Load reads and unmarshals the config from the default or overridden path.

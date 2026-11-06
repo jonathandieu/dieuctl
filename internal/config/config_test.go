@@ -2,7 +2,10 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/spf13/viper"
 )
 
 func TestExpandHome(t *testing.T) {
@@ -70,5 +73,36 @@ func TestConfig_DOAccount_Unknown(t *testing.T) {
 	want := `unknown account "nonexistent", configured: main, platform, spare`
 	if err.Error() != want {
 		t.Errorf("error = %q, want %q", err.Error(), want)
+	}
+}
+
+func TestLoad_Splitwise(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "config.yaml")
+	contents := []byte(`
+splitwise:
+  api_token: op://1Password/splitwise.api-token/credential
+  session: op://1Password/splitwise.session/cookie
+  csrf: op://1Password/splitwise.session/csrf_token
+`)
+	if err := os.WriteFile(path, contents, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cfg, err := Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Splitwise.APIToken != "op://1Password/splitwise.api-token/credential" {
+		t.Errorf("APIToken = %q", cfg.Splitwise.APIToken)
+	}
+	if cfg.Splitwise.Session != "op://1Password/splitwise.session/cookie" {
+		t.Errorf("Session = %q", cfg.Splitwise.Session)
+	}
+	if cfg.Splitwise.CSRF != "op://1Password/splitwise.session/csrf_token" {
+		t.Errorf("CSRF = %q", cfg.Splitwise.CSRF)
 	}
 }
